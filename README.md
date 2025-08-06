@@ -36,7 +36,7 @@ When there's `anyOf` (e.g. [here](https://github.com/danaelhe/kiota_bug/blob/mai
     
 ```
 
-Kiota generates a function that only takes in the first type described, in this case, an int:
+Kiota generates a function that only takes in the first type described (e.g. [here](https://github.com/danaelhe/kiota_bug/blob/main/src/dots/v2/account/keys/index.ts#L18)), in this case, an int:
 
 ```
 export interface KeysRequestBuilder extends BaseRequestBuilder<KeysRequestBuilder> {
