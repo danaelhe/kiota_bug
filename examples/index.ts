@@ -25,7 +25,7 @@ async function main(): Promise<void> {
             console.error("SSH_KEY_ID must be a valid number");
             return;
         }
-        
+        //
         try {
             const keyById = await client.v2.account.keys.bySsh_key_identifier(sshKeyId).get();
             if (keyById && keyById.sshKey) {
