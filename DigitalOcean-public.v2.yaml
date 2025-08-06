@@ -1,0 +1,474 @@
+openapi: 3.0.0
+info:
+  title: DigitalOcean API
+  version: '2.0'
+  description: >
+    # Introduction
+
+    The DigitalOcean API allows you to manage Droplets and resources within the
+
+    DigitalOcean cloud in a simple, programmatic way using conventional HTTP
+    requests.
+
+servers:
+  - url: https://api.digitalocean.com
+
+paths:
+  /v2/account/keys/{ssh_key_identifier}:
+    get:
+      operationId: sshKeys_get
+      summary: Retrieve an Existing SSH Key
+      description: >-
+        To get information about a key, send a GET request to
+        `/v2/account/keys/$KEY_ID` or `/v2/account/keys/$KEY_FINGERPRINT`.
+
+        The response will be a JSON object with the key `ssh_key` and value an
+        ssh_key object which contains the standard ssh_key attributes.
+      tags:
+        - SSH Keys
+      parameters:
+        - $ref: '#/components/parameters/ssh_key_identifier'
+      responses:
+        '200':
+          $ref: '#/components/responses/sshKeys_existing'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '429':
+          $ref: '#/components/responses/too_many_requests'
+        '500':
+          $ref: '#/components/responses/server_error'
+        default:
+          $ref: '#/components/responses/unexpected_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+              "https://api.digitalocean.com/v2/account/keys/512190" 
+        - lang: Go
+          source: |-
+            import (
+                "context"
+                "os"
+
+                "github.com/digitalocean/godo"
+            )
+
+            func main() {
+                token := os.Getenv("DIGITALOCEAN_TOKEN")
+
+                client := godo.NewFromToken(token)
+                ctx := context.TODO()
+
+                key, _, err := client.Keys.GetByID(ctx, 512190)
+            }
+        - lang: Ruby
+          source: |-
+            require 'droplet_kit'
+            token = ENV['DIGITALOCEAN_TOKEN']
+            client = DropletKit::Client.new(access_token: token)
+
+            client.ssh_keys.find(id: 512190) 
+        - lang: Python
+          source: |-
+            import os
+            from pydo import Client
+
+            client = Client(token=os.environ.get("DIGITALOCEAN_TOKEN"))
+
+            resp = client.ssh_keys.get(ssh_key_identifier=512190)
+      security:
+        - bearer_auth:
+            - ssh_key:read
+    put:
+      operationId: sshKeys_update
+      summary: Update an SSH Key's Name
+      description: >-
+        To update the name of an SSH key, send a PUT request to either
+        `/v2/account/keys/$SSH_KEY_ID` or
+        `/v2/account/keys/$SSH_KEY_FINGERPRINT`. Set the `name` attribute to the
+        new name you want to use.
+      tags:
+        - SSH Keys
+      parameters:
+        - $ref: '#/components/parameters/ssh_key_identifier'
+      requestBody:
+        description: Set the `name` attribute to the new name you want to use.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/ssh_key_name'
+      responses:
+        '200':
+          $ref: '#/components/responses/sshKeys_existing'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '429':
+          $ref: '#/components/responses/too_many_requests'
+        '500':
+          $ref: '#/components/responses/server_error'
+        default:
+          $ref: '#/components/responses/unexpected_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+              -d '{"name":"Renamed SSH Key"}' \
+              "https://api.digitalocean.com/v2/account/keys/512190"
+        - lang: Go
+          source: |-
+            import (
+                "context"
+                "os"
+
+                "github.com/digitalocean/godo"
+            )
+
+            func main() {
+                token := os.Getenv("DIGITALOCEAN_TOKEN")
+
+                client := godo.NewFromToken(token)
+                ctx := context.TODO()
+
+                updateRequest := &godo.KeyUpdateRequest{
+                    Name:      "Renamed SSH Key",
+                }
+
+                key, _, err := client.Keys.UpdateByID(ctx, 512190, updateRequest)
+            }
+        - lang: Ruby
+          source: |-
+            require 'droplet_kit'
+            token = ENV['DIGITALOCEAN_TOKEN']
+            client = DropletKit::Client.new(access_token: token)
+
+            ssh_key = DropletKit::SSHKey.new(name: 'Renamed SSH Key')
+            client.ssh_keys.update(ssh_key, id: 512190)
+        - lang: Python
+          source: |-
+            import os
+            from pydo import Client
+
+            client = Client(token=os.environ.get("DIGITALOCEAN_TOKEN"))
+
+            req = {
+              "name": "My SSH Public Key"
+            }
+
+            resp = client.ssh_keys.update(ssh_key_identifier=512190, body=req)
+      security:
+        - bearer_auth:
+            - ssh_key:update
+    delete:
+      operationId: sshKeys_delete
+      summary: Delete an SSH Key
+      description: >-
+        To destroy a public SSH key that you have in your account, send a DELETE
+        request to `/v2/account/keys/$KEY_ID` or
+        `/v2/account/keys/$KEY_FINGERPRINT`.
+
+        A 204 status will be returned, indicating that the action was successful
+        and that the response body is empty.
+      tags:
+        - SSH Keys
+      parameters:
+        - $ref: '#/components/parameters/ssh_key_identifier'
+      responses:
+        '204':
+          $ref: '#/components/responses/no_content'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '429':
+          $ref: '#/components/responses/too_many_requests'
+        '500':
+          $ref: '#/components/responses/server_error'
+        default:
+          $ref: '#/components/responses/unexpected_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+              "https://api.digitalocean.com/v2/account/keys/512190" 
+        - lang: Go
+          source: |-
+            import (
+                "context"
+                "os"
+
+                "github.com/digitalocean/godo"
+            )
+
+            func main() {
+                token := os.Getenv("DIGITALOCEAN_TOKEN")
+
+                client := godo.NewFromToken(token)
+                ctx := context.TODO()
+
+                _, err := client.Keys.DeleteByID(ctx, 512190)
+            }
+        - lang: Ruby
+          source: |-
+            require 'droplet_kit'
+            token = ENV['DIGITALOCEAN_TOKEN']
+            client = DropletKit::Client.new(access_token: token)
+
+            client.ssh_keys.delete(id: 512190)
+        - lang: Python
+          source: |-
+            import os
+            from pydo import Client
+
+            client = Client(token=os.environ.get("DIGITALOCEAN_TOKEN"))
+
+            resp = client.ssh_keys.delete(ssh_key_identifier=512190)
+      security:
+        - bearer_auth:
+            - ssh_key:delete
+
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    ssh_key_identifier:
+      in: path
+      name: ssh_key_identifier
+      required: true
+      description: Either the ID or the fingerprint of an existing SSH key.
+      schema:
+        anyOf:
+          - $ref: '#/components/schemas/ssh_key_id'
+          - $ref: '#/components/schemas/ssh_key_fingerprint'
+      example: 512189
+
+  schemas:
+    error:
+      type: object
+      properties:
+        id:
+          description: >-
+            A short identifier corresponding to the HTTP status code returned.
+            For  example, the ID for a response returning a 404 status code
+            would be "not_found."
+          type: string
+          example: not_found
+        message:
+          description: >-
+            A message providing additional information about the error,
+            including  details to help resolve it when possible.
+          type: string
+          example: The resource you were accessing could not be found.
+        request_id:
+          description: >-
+            Optionally, some endpoints may include a request ID that should be 
+            provided when reporting bugs or opening support tickets to help 
+            identify the issue.
+          type: string
+          example: 4d9d8375-3c56-4925-a3e7-eb137fed17e9
+      required:
+        - id
+        - message
+    
+    ssh_key_id:
+      type: integer
+      description: >-
+        A unique identification number for this key. Can be used to embed a 
+        specific SSH key into a Droplet.
+      readOnly: true
+      example: 512189
+    
+    ssh_key_fingerprint:
+      type: string
+      description: >-
+        A unique identifier that differentiates this key from other keys using 
+        a format that SSH recognizes. The fingerprint is created when the key is
+        added to your account.
+      readOnly: true
+      example: 3b:16:bf:e4:8b:00:8b:b8:59:8c:a9:d3:f0:19:45:fa
+    
+    ssh_key_name:
+      type: string
+      description: >-
+        A human-readable display name for this key, used to easily identify the
+        SSH keys when they are displayed.
+      example: My SSH Public Key
+    
+    sshKeys:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ssh_key_id'
+        fingerprint:
+          $ref: '#/components/schemas/ssh_key_fingerprint'
+        public_key:
+          description: >-
+            The entire public key string that was uploaded. Embedded into the
+            root user's `authorized_keys` file if you include this key during
+            Droplet creation.
+          type: string
+          example: >-
+            ssh-rsa
+            AEXAMPLEaC1yc2EAAAADAQABAAAAQQDDHr/jh2Jy4yALcK4JyWbVkPRaWmhck3IgCoeOO3z1e2dBowLh64QAM+Qb72pxekALga2oi4GvT+TlWNhzPH4V
+            example
+        name:
+          $ref: '#/components/schemas/ssh_key_name'
+      required:
+        - public_key
+        - name
+
+  headers:
+    ratelimit-limit:
+      description: >-
+        The number of requests that can be made per hour per OAuth token.
+      schema:
+        type: integer
+      example: 5000
+    
+    ratelimit-remaining:
+      description: >-
+        The number of requests that remain before you hit your request limit.
+      schema:
+        type: integer
+      example: 4999
+    
+    ratelimit-reset:
+      description: >-
+        This represents the time when the oldest request will expire. The value
+        is given in Unix epoch time.
+      schema:
+        type: integer
+      example: 1415984218
+
+  responses:
+    sshKeys_existing:
+      description: >-
+        A JSON object with the key set to `ssh_key`. The value is an `ssh_key`
+        object containing the standard `ssh_key` attributes.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            properties:
+              ssh_key:
+                $ref: '#/components/schemas/sshKeys'
+    
+    unauthorized:
+      description: Authentication failed due to invalid credentials.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            id: unauthorized
+            message: Unable to authenticate you.
+    
+    not_found:
+      description: The resource was not found.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            id: not_found
+            message: The resource you requested could not be found.
+    
+    too_many_requests:
+      description: The API rate limit has been exceeded.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            id: too_many_requests
+            message: API rate limit exceeded.
+    
+    server_error:
+      description: There was a server error.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            id: server_error
+            message: A server error has occurred.
+    
+    unexpected_error:
+      description: There was an unexpected error.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            id: example_error
+            message: some error message
+    
+    no_content:
+      description: The action was successful and the response body is empty.
+      headers:
+        ratelimit-limit:
+          $ref: '#/components/headers/ratelimit-limit'
+        ratelimit-remaining:
+          $ref: '#/components/headers/ratelimit-remaining'
+        ratelimit-reset:
+          $ref: '#/components/headers/ratelimit-reset'
+
+security:
+  - bearer_auth: []
