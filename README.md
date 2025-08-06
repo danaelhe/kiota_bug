@@ -1,5 +1,5 @@
 # Bug Described
-When there's `anyOf` of mixed types in OpenAPI 3.0 spec:
+When there's `anyOf` (e.g. [here](https://github.com/danaelhe/kiota_bug/blob/main/DigitalOcean-public.v2.yaml#L256) of mixed types in OpenAPI 3.0 spec:
 ```
     components:
         parameters:
